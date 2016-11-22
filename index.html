@@ -1,63 +1,106 @@
 <!DOCTYPE html>
+<!--HTML5 doctype-->
 <html>
     <head>
-        <title>Device Properties Example</title>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <link href="css/icons.css" rel="stylesheet" type="text/css" />
+        <link href="css/af.ui.css" rel="stylesheet" type="text/css" />
+        <link href="css/style.css" rel="stylesheet" type="text/css" />
+        <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDsujp7vdVRPj7B5pZwdr4ZShABgVdNrCU&sensor=true"></script>
+        <script type="text/javascript" charset="utf-8" src="http://localhost:58888/_appMobi/appmobi.js"></script>
+        <script src="js/appframework.ui.min.js"></script>  
+        <script src="js/geolocation.js"></script>   
+        <script src="js/camera.js"></script> 
+        <script src="js/accelerometer.js"></script>   
+        <script src="js/contacts.js"></script>   
+        <script type="text/javascript" language="javascript">
 
-        <script type="text/javascript" charset="utf-8" src="phonegap.js"></script>
-        <script type="text/javascript" charset="utf-8">
-           
-            app.initialize();
-    
-
-            // Wait for Cordova to load
-            //
-            document.addEventListener("deviceready", onDeviceReady, false);
-
-            // Cordova isss ready
-            //
+            //Device is ready
             function onDeviceReady() {
-                navigator.geolocation.getCurrentPosition(onSuccess, onError);
+                //hide splash screen now that our app is ready to run
+                AppMobi.device.hideSplashScreen();
+
+                //Launch App Framework
+                setTimeout(function() {
+                    $.ui.launch();
+                }, 50);
             }
 
-            function onSuccess(position) {
-                var geoElement = document.getElementById('geodata');
-                geoElement.innerHTML =
-                        'Latitude: ' + position.coords.latitude + '<br />' +
-                        'Longitude: ' + position.coords.longitude + '<br />' +
-                        'Altitude: ' + position.coords.altitude + '<br />' +
-                        'Accuracy: ' + position.coords.accuracy + '<br />' +
-                        'Speed: ' + position.coords.speed + '<br />' +
-                        'Timestamp: ' + position.coords.timestamp + '<br />';
+            //App Framework Config
+            $.ui.autoLaunch = false;
+            $.ui.useOSThemes = true;
+            $.ui.blockPageScroll();
+            $.ui.backButtonText = "Back";
+            $(document).ready(function() {
+                if ($.ui.useOSThemes && !$.os.ios && $("#afui").get(0).className !== "ios")
+                    $("#afui").removeClass("ios");
+            });
 
-            }
-            function onError() {
-                var errString = '';
-                if (error.code) {
-                    switch (error.code) {
-                        case 1:
-                            errString = 'Cannot fetch the location because we do not have permission';
-                            break;
+            //Initial event handler
+            document.addEventListener("appMobi.device.ready", onDeviceReady, false);
 
-                        case 2:
-                            errString = 'The location cannot be detirmined';
-                            
-                            case 3:
-                                errString = 'There was a timeout';
-                                
-                                default:
-                                    errString = 'Unknown error';
-                                    
-                                    break
-                    }
-                }
-                var element = document.getElementById('geodata');
-                element.innerHTML = errString;
-            }
-            
+
         </script>
     </head>
     <body>
-        <h1>Geolocation Data</h1>
-        <div id="geodata">Getting location data..</div>
+        <div id="afui" class='ios'>
+            <div id="header"></div><!--/header-->
+            <div id="content" style="">
+                <!--Homepage-->
+                <div class="panel" title="Main" data-nav="nav_0" id="page_0" data-appbuilder-object="page" style="">
+                    <div class="container" style="width:100%" data-appbuilder-object="container" data-position="static">
+                        <ul class="list" data-appbuilder-object="list" data-position="static">
+                            <li><a href="#geolocation">Geolocation</a></li>
+                            <li><a href="#camera">Camera</a></li>
+                            <li><a href="#accelerometer">Accelerometer</a></li>
+                            <li><a href="#contacts">Contacts</a></li>
+                        </ul>            
+                    </div><!--/container-->
+                </div><!--/main-->
 
+                <!--Geolocation-->
+                <div class="panel" title="Geolocation" data-nav="nav_0" id="geolocation" data-appbuilder-object="page" data-load="getLocation" style="height:500px;">     
+                    <div id="map_placer" style="width:350px;height:100%;text-align:center;"><p>Determining Your Location</p></div>                   
+                </div><!--/geolocation-->
+
+                <!--Camera-->
+                <div class="panel" title="Camera" data-nav="nav_0" id="camera" data-appbuilder-object="page">     
+                    <div id="camButtons">
+                        <button class="button" onclick="takePicture();">Take Picture</button>   
+                        <button class="button" onclick="importPicture();">Import Picture Picture</button>  
+                        <button class="button" onclick="showPictureList();">View Pictures</button>  
+                        <button class="button" onclick="clearPictures();">Clear Pictures</button>
+                    </div>                                   
+                    <ul id="picList"></ul>
+                </div><!--/camera-->
+
+                <!--Accelerometer-->
+                <div class="panel" title="Accelerometer" data-nav="nav_0" id="accelerometer" data-appbuilder-object="page">     
+                    <button class="button green" onclick="watchAccelerometer();">Watch Accelerator</button>       
+                    <button class="button red" onclick="clearAccelerometer();">Clear Accelerator</button> 
+                    <br>
+                    <div id="accelReadings">Fetching data...</div>
+                </div><!--/accelerometer-->
+
+                <!--Contacts-->
+                <div class="panel" title="Contacts" data-nav="nav_0" id="contacts" data-appbuilder-object="page">     
+                    <button class="button" onclick="AppMobi.contacts.getContacts();">Get Contacts</button>
+                    <button class="button" onclick="AppMobi.contacts.addContact();">Add Contact</button>
+                    <button class="button" onclick="AppMobi.contacts.chooseContact();">Choose Contact</button>
+                    <table id="contactsTable" border="0" width="100%"><caption>Contact List</caption></table>
+                </div><!--/contacts-->
+
+
+            </div><!--/content-->
+
+            <div id="navbar">
+                <!--Footer Icons-->
+                <a href="#page_0" class="icon home">Home</a>
+                <a href="#geolocation" class="icon location">GeoLocation</a>
+                <a href="#camera" class="icon camera">Camera</a>
+            </div>          
+        </div><!--/aufi-->
     </body>
+</html>
